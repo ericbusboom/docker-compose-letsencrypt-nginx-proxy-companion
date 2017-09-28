@@ -7,13 +7,13 @@ services:
     container_name: nginx
     restart: unless-stopped
     ports:
-      - "80:80"
-      - "443:443"
+      - "81:80"
+      - "8443:443"
     volumes:
-      - ${NGINX_FILES_PATH}/conf.d:/etc/nginx/conf.d
-      - ${NGINX_FILES_PATH}/vhost.d:/etc/nginx/vhost.d
-      - ${NGINX_FILES_PATH}/html:/usr/share/nginx/html
-      - ${NGINX_FILES_PATH}/certs:/etc/nginx/certs:ro
+      - vol-conf:/etc/nginx/conf.d
+      - vol-vhost:/etc/nginx/vhost.d
+      - vol-html:/usr/share/nginx/html
+      - vol-certs:/etc/nginx/certs:ro
 
   nginx-gen:
     image: jwilder/docker-gen
@@ -21,26 +21,36 @@ services:
     container_name: nginx-gen
     restart: unless-stopped
     volumes:
-      - ${NGINX_FILES_PATH}/conf.d:/etc/nginx/conf.d
-      - ${NGINX_FILES_PATH}/vhost.d:/etc/nginx/vhost.d
-      - ${NGINX_FILES_PATH}/html:/usr/share/nginx/html
-      - ${NGINX_FILES_PATH}/certs:/etc/nginx/certs:ro
+      - vol-conf:/etc/nginx/conf.d
+      - vol-vhost:/etc/nginx/vhost.d
+      - vol-html:/usr/share/nginx/html
+      - vol-certs:/etc/nginx/certs:ro
+      - vol-tmpl:/etc/docker-gen/templates:ro
       - /var/run/docker.sock:/tmp/docker.sock:ro
-      - ./nginx.tmpl:/etc/docker-gen/templates/nginx.tmpl:ro
 
   nginx-letsencrypt:
     image: jrcs/letsencrypt-nginx-proxy-companion
     container_name: nginx-letsencrypt
     restart: unless-stopped
     volumes:
-      - ${NGINX_FILES_PATH}/conf.d:/etc/nginx/conf.d
-      - ${NGINX_FILES_PATH}/vhost.d:/etc/nginx/vhost.d
-      - ${NGINX_FILES_PATH}/html:/usr/share/nginx/html
-      - ${NGINX_FILES_PATH}/certs:/etc/nginx/certs:rw
+      - vol-conf:/etc/nginx/conf.d
+      - vol-vhost:/etc/nginx/vhost.d
+      - vol-html:/usr/share/nginx/html
+      - vol-certs:/etc/nginx/certs:rw
       - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
       NGINX_DOCKER_GEN_CONTAINER: "nginx-gen"
       NGINX_PROXY_CONTAINER: "nginx"
+
+
+
+volumes:
+    vol-conf: {}
+    vol-vhost: {}
+    vol-html: {}
+    vol-certs: {}
+    vol-tmpl: {}
+
 
 networks:
   default:
