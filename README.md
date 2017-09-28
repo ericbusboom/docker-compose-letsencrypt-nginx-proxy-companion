@@ -18,63 +18,9 @@ In order to use, you must follow these steps:
 git clone https://github.com/evertramos/docker-compose-letsencrypt-nginx-proxy-companion.git
 ```
 
-Or just copy the content of `docker-compose.yml`, as of below:
+2. Change the file `docker-compose.yml` with you own settings:
 
-```bash
-version: '3'
-services:
-  nginx:
-    image: nginx
-    labels:
-        com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy: "true"
-    container_name: nginx
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ${NGINX_FILES_PATH}/conf.d:/etc/nginx/conf.d
-      - ${NGINX_FILES_PATH}/vhost.d:/etc/nginx/vhost.d
-      - ${NGINX_FILES_PATH}/html:/usr/share/nginx/html
-      - ${NGINX_FILES_PATH}/certs:/etc/nginx/certs:ro
-
-  nginx-gen:
-    image: jwilder/docker-gen
-    command: -notify-sighup nginx -watch -wait 5s:30s /etc/docker-gen/templates/nginx.tmpl /etc/nginx/conf.d/default.conf
-    container_name: nginx-gen
-    restart: unless-stopped
-    volumes:
-      - ${NGINX_FILES_PATH}/conf.d:/etc/nginx/conf.d
-      - ${NGINX_FILES_PATH}/vhost.d:/etc/nginx/vhost.d
-      - ${NGINX_FILES_PATH}/html:/usr/share/nginx/html
-      - ${NGINX_FILES_PATH}/certs:/etc/nginx/certs:ro
-      - /var/run/docker.sock:/tmp/docker.sock:ro
-      - ./nginx.tmpl:/etc/docker-gen/templates/nginx.tmpl:ro
-
-  nginx-letsencrypt:
-    image: jrcs/letsencrypt-nginx-proxy-companion
-    container_name: nginx-letsencrypt
-    restart: unless-stopped
-    volumes:
-      - ${NGINX_FILES_PATH}/conf.d:/etc/nginx/conf.d
-      - ${NGINX_FILES_PATH}/vhost.d:/etc/nginx/vhost.d
-      - ${NGINX_FILES_PATH}/html:/usr/share/nginx/html
-      - ${NGINX_FILES_PATH}/certs:/etc/nginx/certs:rw
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    environment:
-      NGINX_DOCKER_GEN_CONTAINER: "nginx-gen"
-      NGINX_PROXY_CONTAINER: "nginx"
-```
-
-2. Create an `.env` file and say where you will locate the nginx files:
-
-```
-NGINX_FILES_PATH=/path/to/your/nginx/data
-```
-
-3. Change the file `docker-compose.yml` with you own settings:
-
-3.1. Set your PROXY Network
+2.1. Set your PROXY Network
 
 Your wordpress container must be in the same network of your nginx proxy.
 ```bash
@@ -84,7 +30,7 @@ networks:
       name: your-network-name
 ```
 
-3.2. Set your IP address (optional)
+2.2. Set your IP address (optional)
 
 On the line `ports` add as follow:
 ```bash
@@ -94,12 +40,22 @@ On the line `ports` add as follow:
 
 ```
 
-4. Get the latest version of **nginx.tmpl** file (only if you have not cloned this repostiry)
+3. Get the latest version of **nginx.tmpl** file (only if you have not cloned this repostiry)
 
 ```bash
 curl https://raw.githubusercontent.com/jwilder/nginx-proxy/master/nginx.tmpl > nginx.tmpl
 ```
 Make sure you are in the same folder of docker-compose file, if not, you must update the the settings `- ./nginx.tmpl:/etc/docker-gen/templates/nginx.tmpl:ro`.
+
+
+4. Load the volume
+
+```bash
+cd nginx-proxy-volume
+make build
+```
+
+Maybe also ``make shell``; not actually sure when the file gets loaded. 
 
 5. Start your project
 ```bash
