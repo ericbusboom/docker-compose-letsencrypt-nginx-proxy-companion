@@ -7,12 +7,16 @@ NAME = nginx-proxy-volume-container
 INSTANCE = default
 DOCKER ?= docker
 
+# NOTE! Docker-compose gets the project name from the directory the compose file is in, 
+# or the -p option, or the COMPOSE_PROJECT_NAME environmental variable. 
+PROJECT_NAME=secureproxy
+
 VOLUMES= \
---mount source=secureproxy_vol-conf,destination=/etc/nginx/conf.d \
---mount source=secureproxy_vol-vhost,destination=/etc/nginx/vhost.d \
---mount source=secureproxy_vol-html,destination=/usr/share/nginx/html \
---mount source=secureproxy_vol-certs,destination=/etc/nginx/certs \
---mount source=secureproxy_vol-tmpl,destination=/etc/docker-gen/templates/
+-v $(PROJECT_NAME)_vol-conf:/etc/nginx/conf.d \
+-v $(PROJECT_NAME)_vol-vhost:/etc/nginx/vhost.d \
+-v $(PROJECT_NAME)_vol-html:/usr/share/nginx/html \
+-v $(PROJECT_NAME)_vol-certs:/etc/nginx/certs \
+-v $(PROJECT_NAME)_vol-tmpl:/etc/docker-gen/templates/
 
 .PHONY: build push shell run start stop restart reload rm rmf release
 
